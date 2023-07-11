@@ -3,7 +3,7 @@
 
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
 
-VAGRANT_BOX           = "local/ol8"
+VAGRANT_BOX           = "oraclelinux/8"
 CPUS_CONTROL_PLANE    = 2
 CPUS_NODE             = 2
 MEMORY_CONTROL_PLANE  = 2148
