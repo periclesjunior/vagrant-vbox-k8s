@@ -11,5 +11,5 @@ echo "[TASK 3] Deploy CNI (Weavenet)"
 sudo kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
 echo "[TASK 4] Generate and save cluster join command to kubeadm_join.sh"
-sudo mkdir -p /opt/vagrant/data/.k8s
+sudo rm -rf /opt/vagrant/data/.k8s && mkdir -p /opt/vagrant/data/.k8s
 sudo kubeadm token create --print-join-command >> /opt/vagrant/data/.k8s/kubeadm_join.sh
