@@ -41,6 +41,7 @@ image-endpoint: unix:///run/containerd/containerd.sock
 timeout: 30
 debug: false
 EOF
+sudo systemctl enable --now containerd
 
 echo "[TASK 7] Add apt repo for kubernetes"
 sudo cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
