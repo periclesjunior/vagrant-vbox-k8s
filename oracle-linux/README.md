@@ -6,7 +6,11 @@ Deploy k8s cluster, 1 control-plane and 2 worker nodes, with kubeadm method in O
 
 # Ref
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
 https://github.com/teonivalois/k8s-vagrant
+
 https://github.com/justmeandopensource/kubernetes
+
 https://github.com/lknite/demos
+
 https://github.com/techiescamp/vagrant-kubeadm-kubernetes
