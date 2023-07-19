@@ -4,6 +4,9 @@ This repo contains configuration files that are necessary to start a local kuber
 # Goal
 Deploy k8s cluster, 1 control-plane and 2 worker nodes, with kubeadm method in Oracle Linux with Containerd (CRI) and Weavenet (CNI)
 
+# OBS
+Default insecure keypair settings removed and generated other ssh keypair
+
 # Ref
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
