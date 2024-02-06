@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export DEBIAN_FRONTEND=noninteractive
+
 echo "[TASK 1] Disable and turn off SWAP"
 sed -i '/swap/d' /etc/fstab
 swapoff -a
@@ -23,16 +25,7 @@ net.ipv4.ip_forward                 = 1
 EOF
 sysctl --system >/dev/null 2>&1
 
-echo "[TASK 5] Set up kubernetes repo"
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
-echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
-
-echo "[TASK 6] Install Kubernetes components (kubeadm, kubelet and kubectl)"
-apt-get update -qq >/dev/null
-apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
-
-echo "[TASK 7] Install containerd runtime"
-export DEBIAN_FRONTEND=noninteractive
+echo "[TASK 5] Install containerd runtime"
 apt-get update -qq >/dev/null
 apt-get install -qq -y apt-transport-https ca-certificates curl gnupg lsb-release jq bash-completion >/dev/null
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/docker.gpg
@@ -43,19 +36,36 @@ apt-get update -qq >/dev/null
 apt-get install -qq -y containerd.io >/dev/null
 containerd config default > /etc/containerd/config.toml
 sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
+cat >>/etc/crictl.yaml<<EOF
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 30
+debug: false
+EOF
+systemctl enable --now containerd >/dev/null
+
+echo "[TASK 6] Set up kubernetes repo"
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
+echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+
+echo "[TASK 7] Install Kubernetes components (kubeadm, kubelet and kubectl)"
+apt-get update -qq >/dev/null
+apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
+
+echo "[TASK 8] Adjust pause image"
 # Adjust pause image to what's actually installed
 VAR_PAUSE_IMAGE=$(kubeadm config images list | grep pause)
 sed -i "s,sandbox_image = .*,sandbox_image = \"$VAR_PAUSE_IMAGE\",g" /etc/containerd/config.toml
-systemctl enable --now containerd >/dev/null
+systemctl restart containerd
 
-echo "[TASK 8] kubelet settings"
+echo "[TASK 9] kubelet settings"
 VAR_NODE_IP="$(ip --json a s | jq -r '.[] | if .ifname == "eth1" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
 cat >/etc/default/kubelet <<EOF
 KUBELET_EXTRA_ARGS=--node-ip=$VAR_NODE_IP
 EOF
 systemctl enable kubelet
 
-echo "[TASK 9] Update /etc/hosts file"
+echo "[TASK 10] Update /etc/hosts file"
 cat >>/etc/hosts<<EOF
 192.168.56.250   control-plane.example.com    control-plane
 192.168.56.251   node001.example.com    node001
