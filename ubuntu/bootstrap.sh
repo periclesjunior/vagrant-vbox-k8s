@@ -45,15 +45,15 @@ containerd config default > /etc/containerd/config.toml
 sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 # Adjust pause image to what's actually installed
 VAR_PAUSE_IMAGE=$(kubeadm config images list | grep pause)
-sudo -E sed -i "s,sandbox_image = .*,sandbox_image = \"$VAR_PAUSE_IMAGE\",g" /etc/containerd/config.toml
-sudo systemctl enable --now containerd >/dev/null
+sed -i "s,sandbox_image = .*,sandbox_image = \"$VAR_PAUSE_IMAGE\",g" /etc/containerd/config.toml
+systemctl enable --now containerd >/dev/null
 
 echo "[TASK 8] kubelet settings"
 VAR_NODE_IP="$(ip --json a s | jq -r '.[] | if .ifname == "eth1" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
-sudo cat >/etc/default/kubelet <<EOF
+cat >/etc/default/kubelet <<EOF
 KUBELET_EXTRA_ARGS=--node-ip=$VAR_NODE_IP
 EOF
-sudo systemctl enable kubelet
+systemctl enable kubelet
 
 echo "[TASK 9] Update /etc/hosts file"
 cat >>/etc/hosts<<EOF
