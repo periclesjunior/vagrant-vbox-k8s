@@ -1,0 +1,61 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ENV['VAGRANT_NO_PARALLEL'] = 'yes'
+
+VAGRANT_BOX           = "generic/ubuntu2004"
+CPUS_CONTROL_PLANE    = 2
+CPUS_NODE             = 2
+MEMORY_CONTROL_PLANE  = 2148
+MEMORY_NODE           = 2148
+NODES_COUNT           = 2
+
+Vagrant.configure(2) do |config|
+
+  config.ssh.insert_key = false
+  config.ssh.private_key_path = ["~/.ssh/vagrant-ssh-key","~/.vagrant.d/insecure_private_key"]
+  config.vm.provision "file", source: "~/.ssh/vagrant-ssh-key.pub", destination: "~/.ssh/authorized_keys"
+  config.vm.synced_folder "./shared", "/opt/vagrant/", disabled: false
+  config.vm.provision "shell", path: "bootstrap.sh"
+
+  # Kubernetes Control Plane Server
+  config.vm.define "control-plane" do |node|
+
+    node.vm.box               = VAGRANT_BOX
+    node.vm.hostname          = "control-plane.example.com"
+
+    node.vm.network "private_network", ip: "192.168.56.250"
+
+    node.vm.provider :virtualbox do |v|
+      v.name    = "control-plane"
+      v.memory  = MEMORY_CONTROL_PLANE
+      v.cpus    = CPUS_CONTROL_PLANE
+    end
+
+    node.vm.provision "shell", path: "bootstrap_control_plane.sh"
+
+  end
+
+  # Kubernetes Worker Nodes
+  (1..NODES_COUNT).each do |i|
+
+    config.vm.define "node00#{i}" do |node|
+
+      node.vm.box               = VAGRANT_BOX
+      node.vm.hostname          = "node00#{i}.example.com"
+
+      node.vm.network "private_network", ip: "192.168.56.25#{i}"
+
+      node.vm.provider :virtualbox do |v|
+        v.name    = "node00#{i}"
+        v.memory  = MEMORY_NODE
+        v.cpus    = CPUS_NODE
+      end
+
+      node.vm.provision "shell", path: "bootstrap_worker_nodes.sh"
+
+    end
+
+  end
+
+end
