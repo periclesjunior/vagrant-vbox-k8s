@@ -23,7 +23,15 @@ net.ipv4.ip_forward                 = 1
 EOF
 sysctl --system >/dev/null 2>&1
 
-echo "[TASK 5] Install containerd runtime"
+echo "[TASK 5] Set up kubernetes repo"
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
+echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+
+echo "[TASK 6] Install Kubernetes components (kubeadm, kubelet and kubectl)"
+apt-get update -qq >/dev/null
+apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
+
+echo "[TASK 7] Install containerd runtime"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq >/dev/null
 apt-get install -qq -y apt-transport-https ca-certificates curl gnupg lsb-release jq bash-completion >/dev/null
@@ -35,16 +43,10 @@ apt-get update -qq >/dev/null
 apt-get install -qq -y containerd.io >/dev/null
 containerd config default > /etc/containerd/config.toml
 sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
-systemctl restart containerd
-systemctl enable containerd >/dev/null
-
-echo "[TASK 6] Set up kubernetes repo"
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
-echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
-
-echo "[TASK 7] Install Kubernetes components (kubeadm, kubelet and kubectl)"
-apt-get update -qq >/dev/null
-apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
+# Adjust pause image to what's actually installed
+VAR_PAUSE_IMAGE=$(kubeadm config images list | grep pause)
+sudo -E sed -i "s,sandbox_image = .*,sandbox_image = \"$VAR_PAUSE_IMAGE\",g" /etc/containerd/config.toml
+sudo systemctl enable --now containerd >/dev/null
 
 echo "[TASK 8] kubelet settings"
 VAR_NODE_IP="$(ip --json a s | jq -r '.[] | if .ifname == "eth1" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
