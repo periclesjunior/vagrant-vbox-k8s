@@ -50,7 +50,7 @@ echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/
 
 echo "[TASK 7] Install Kubernetes components (kubeadm, kubelet and kubectl)"
 apt-get update -qq >/dev/null
-apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
+apt-get install -qq -y kubeadm='1.29.0-1.1' kubelet='1.29.0-1.1' kubectl='1.29.0-1.1' >/dev/null
 
 echo "[TASK 8] Adjust pause image"
 # Adjust pause image to what's actually installed
