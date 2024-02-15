@@ -28,12 +28,12 @@ net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables  = 1
 net.ipv4.ip_forward                 = 1
 EOF
-sudo sysctl --system >/dev/null 2>&1
+sysctl --system >/dev/null 2>&1
 
 echo "[TASK 7] Add repo and install containerd runtime"
 dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 dnf install containerd.io -y
-containerd config default | sudo tee /etc/containerd/config.toml
+containerd config default | tee /etc/containerd/config.toml
 sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
 cat >>/etc/crictl.yaml<<EOF
 runtime-endpoint: unix:///run/containerd/containerd.sock
