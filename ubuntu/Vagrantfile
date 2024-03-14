@@ -2,6 +2,7 @@
 # vi: set ft=ruby :
 
 ENV['VAGRANT_NO_PARALLEL'] = 'yes'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 VAGRANT_BOX           = "generic/ubuntu2004"
 CPUS_CONTROL_PLANE    = 2
