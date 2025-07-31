@@ -33,6 +33,7 @@ Vagrant.configure(2) do |config|
       v.name    = "control-plane"
       v.memory  = MEMORY_CONTROL_PLANE
       v.cpus    = CPUS_CONTROL_PLANE
+      v.customize ["modifyvm", :id, "--groups", "/K8sGroup"]
     end
 
     node.vm.provision "shell", path: "./shared/bootstrap_control_plane.sh"
@@ -54,6 +55,7 @@ Vagrant.configure(2) do |config|
         v.name    = "node-00#{i}"
         v.memory  = MEMORY_NODE
         v.cpus    = CPUS_NODE
+        v.customize ["modifyvm", :id, "--groups", "/K8sGroup"]
       end
 
       node.vm.provision "shell", path: "./shared/bootstrap_worker_nodes.sh"
