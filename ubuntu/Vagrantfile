@@ -45,6 +45,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "node00#{i}" do |node|
 
       node.vm.box               = VAGRANT_BOX
+      node.vm.box_version       = VAGRANT_BOX_VERSION
       node.vm.hostname          = "node00#{i}.example.com"
 
       node.vm.network "private_network", ip: "192.168.56.25#{i}"
