@@ -61,7 +61,7 @@ sed -i "s,sandbox_image = .*,sandbox_image = \"$VAR_PAUSE_IMAGE\",g" /etc/contai
 systemctl restart containerd
 
 echo "[TASK 9] kubelet settings"
-VAR_NODE_IP="$(ip --json a s | jq -r '.[] | if .ifname == "eth1" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
+VAR_NODE_IP="$(ip --json a s | jq -r '.[] | if .ifname == "enp0s8" then .addr_info[] | if .family == "inet" then .local else empty end else empty end')"
 cat >/etc/default/kubelet <<EOF
 KUBELET_EXTRA_ARGS=--node-ip=$VAR_NODE_IP
 EOF
@@ -70,6 +70,6 @@ systemctl enable kubelet
 echo "[TASK 10] Update /etc/hosts file"
 cat >>/etc/hosts<<EOF
 192.168.56.250   control-plane.example.com    control-plane
-192.168.56.251   node001.example.com    node001
-192.168.56.252   node002.example.com    node002
+192.168.56.251   node-001.example.com    node-001
+192.168.56.252   node-002.example.com    node-002
 EOF
