@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VAR_K8S_VERSION="1.33"
+
 export DEBIAN_FRONTEND=noninteractive
 
 echo "[TASK 1] Disable and turn off SWAP"
@@ -45,12 +47,12 @@ EOF
 systemctl enable --now containerd >/dev/null
 
 echo "[TASK 6] Set up kubernetes repo"
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
-echo 'deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+curl -fsSL "https://pkgs.k8s.io/core:/stable:/v${VAR_K8S_VERSION}/deb/Release.key" | gpg --dearmor -o /etc/apt/trusted.gpg.d/kubernetes.gpg
+echo "deb [signed-by=/etc/apt/trusted.gpg.d/kubernetes.gpg] https://pkgs.k8s.io/core:/stable:/v${VAR_K8S_VERSION}/deb/ /" > /etc/apt/sources.list.d/kubernetes.list
 
 echo "[TASK 7] Install Kubernetes components (kubeadm, kubelet and kubectl)"
 apt-get update -qq >/dev/null
-apt-get install -qq -y kubeadm='1.29.0-1.1' kubelet='1.29.0-1.1' kubectl='1.29.0-1.1' >/dev/null
+apt-get install -qq -y kubeadm kubelet kubectl >/dev/null
 
 echo "[TASK 8] Adjust pause image"
 # Adjust pause image to what's actually installed
